@@ -11,6 +11,7 @@ class Block {
         this.data = data;
         this.previousHash = previousHash;
         this.hash = this.calculateHash();
+        this.noce = 0;
     }
 
     /* calculate the hash function of this block so it's going to 
@@ -21,8 +22,17 @@ class Block {
             this.index +
             this.previousHash +
             this.timestamp +
-            JSON.stringify(this.data)
+            JSON.stringify(this.data) +
+            this.noce
         ).toString();
+    }
+
+    mineBlock(difficlty){
+        while(this.hash.substring(0, difficlty) !== Array(difficlty + 1).join("0")){
+            this.noce++;
+            this.hash = this.calculateHash();
+        }
+        console.log("Block mined: " + this.hash);
     }
 }
 
@@ -31,6 +41,7 @@ class Blockchain {
     /* the constructor is responsible for initializing our blockchain */
     constructor() {
         this.chain = [this.createGenesisBlock()];
+        this.difficlty = 4;
     }
 
     /* this method create Genesis block and this is going to return a new block */
@@ -45,7 +56,7 @@ class Blockchain {
     /* this method is responsible for adding a new block on to the chain */
     addBlock(newBlock) {
         newBlock.previousHash = this.getLatestBlock().hash;
-        newBlock.hash = newBlock.calculateHash();
+        newBlock.mineBlock(this.difficlty);
         this.chain.push(newBlock);
     }
 
@@ -71,16 +82,11 @@ class Blockchain {
 }
 
 let savjeeCoin = new Blockchain();
+
+console.log('Mining block 1...');
 savjeeCoin.addBlock(new Block(1, "01/01/2021", { amount: 4 }));
+
+console.log('Mining block 2...');
 savjeeCoin.addBlock(new Block(2, "02/02/2021", { amount: 10 }));
 
-/* check if our block chain is valid */
-console.log("Is blockchain valid? " + savjeeCoin.isChainValid());
 
-savjeeCoin.chain[1].data = { amount: 100 };
-savjeeCoin.chain[1].hash = savjeeCoin.chain[1].calculateHash();
-
-console.log("Is blockchain valid? " + savjeeCoin.isChainValid());
-
-/* console lock our block chain to stringify before we output it */
- //console.log(JSON.stringify(savjeeCoin, null, 4));
